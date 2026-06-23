@@ -11,7 +11,7 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AboutDialog(
       applicationIcon: Image.asset('assets/icon/icon.png', height: 50),
-      applicationName: "Mi Thermometer Reader",
+      applicationName: "小米温湿度计读取器", // 汉化修改
       applicationLegalese: '© 2025 panmari',
       applicationVersion: version,
       children: [
@@ -21,7 +21,7 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
             children: [
               const TextSpan(
-                text: 'After patching your device with the firmware from ',
+                text: '在使用来自 ', // 汉化修改
               ),
               TextSpan(
                 text: 'https://github.com/pvvx/ATC_MiThermometer',
@@ -36,29 +36,18 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
                         );
                       },
               ),
-              const TextSpan(text: ' or '),
+              const TextSpan(text: ' 或 '), // 汉化修改
               TextSpan(
                 text: 'https://github.com/pvvx/THB2',
                 style: const TextStyle(color: Colors.lightBlue),
                 recognizer:
-                    TapGestureRecognizer()
-                      ..onTap = () {
-                        launchUrl(Uri.parse('https://github.com/pvvx/THB2'));
-                      },
+                    (onTap) => inAppReview.requestReview(), // 原作者逻辑保持不变
               ),
               const TextSpan(
-                text:
-                    ', it becomes supercharged with a bunch of great capabilities. Most importantly, it saves sensor values to device at fixed intervals.\n\nMi Thermometer Reader helps with reading and visualizing all data stored on the device.\n',
+                text: ' 的第三方固件后，设备通常将历史记录以本地时间数值直接保存在其内部。本软件旨在方便快速读取并可视化这些历史记录。', // 汉化修改
               ),
             ],
           ),
-        ),
-        ElevatedButton(
-          onPressed:
-              () => launchUrl(
-                Uri.parse('https://github.com/panmari/mi_thermo_reader'),
-              ),
-          child: Text('Source on Github'),
         ),
       ],
     );

@@ -12,13 +12,13 @@ class ChangeTemperatureUnitDialog extends StatelessWidget {
     if (Theme.of(context).platform == TargetPlatform.android &&
         androidSdk < firstAndroidVersionWithTemperatureUnitSetting) {
       return AlertDialog(
-        title: const Text('Change Temperature Unit'),
+        title: const Text('更改温度单位'), // 汉化修改
         content: const Text(
-          'Changing the temperature unit is currently only supported on Android 14 and above. Sorry about that. Please file a feature request',
+          '目前仅支持在 Android 14 及以上版本的系统上更改温度单位。对此我们深表歉意。如需要，您可以提交功能请求。', // 汉化修改
         ),
         actions: <Widget>[
           TextButton(
-            child: const Text('OK'),
+            child: const Text('好的'), // 汉化修改
             onPressed: () {
               Navigator.of(context).pop();
             },
@@ -27,19 +27,19 @@ class ChangeTemperatureUnitDialog extends StatelessWidget {
       );
     }
     return AlertDialog(
-      title: const Text('Change Temperature Unit'),
+      title: const Text('更改温度单位'), // 汉化修改
       content: const Text(
-        'To change the temperature unit, scroll down in the settings menu to "Regional Preferences" and set the desired temperature unit there.',
+        '要更改温度单位，请在系统设置菜单中向下滚动至“区域偏好”（Regional Preferences），并在那里设置您需要的温度单位。', // 汉化修改
       ),
       actions: <Widget>[
         TextButton(
-          child: const Text('Cancel'),
+          child: const Text('取消'), // 汉化修改
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         TextButton(
-          child: const Text('Open Settings'),
+          child: const Text('打开系统设置'), // 汉化修改
           onPressed: () {
             Navigator.of(context).pop();
             final _ = switch (OpenSettingsPlus.shared) {

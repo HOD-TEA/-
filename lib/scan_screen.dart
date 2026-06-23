@@ -80,8 +80,8 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
       var withServices = [BluetoothConstants.memoServiceGuid];
       _systemDevices = await FlutterBluePlus.systemDevices(withServices);
     } catch (e, trace) {
-      _error = 'Retrieving system devices failed: $e';
-      log("Retrieving system devices failed: $e", stackTrace: trace);
+      _error = '获取系统已配对设备失败: $e'; // 汉化修改
+      log("获取系统已配对设备失败: $e", stackTrace: trace);
     }
     try {
       await FlutterBluePlus.startScan(
@@ -93,8 +93,8 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
         timeout: const Duration(seconds: 15),
       );
     } catch (e, trace) {
-      _error = 'Start scan failed: $e';
-      log("Start scan failed: $e", stackTrace: trace);
+      _error = '启动扫描失败: $e'; // 汉化修改
+      log("启动扫描失败: $e", stackTrace: trace);
     }
     if (mounted) {
       setState(() {});
@@ -150,7 +150,7 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Find Devices'),
+        title: const Text('寻找设备'), // 汉化修改
         bottom: PreferredSize(
           preferredSize: Size.zero,
           child: _isScanning ? LinearProgressIndicator() : SizedBox(),

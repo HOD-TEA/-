@@ -17,7 +17,7 @@ class SystemDeviceTile extends StatelessWidget {
       title: Text(device.platformName),
       subtitle: Text(device.remoteId.str),
       leading: Icon(Icons.computer),
-      trailing: ElevatedButton(onPressed: onOpen, child: const Text('Open')),
+      trailing: ElevatedButton(onPressed: onOpen, child: const Text('打开')), // 汉化修改
     );
   }
 }

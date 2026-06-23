@@ -29,7 +29,7 @@ class ScanResultTile extends StatelessWidget {
   Widget _buildConnectButton(BuildContext context) {
     return ElevatedButton(
       onPressed: (result.advertisementData.connectable) ? onTap : null,
-      child: const Text('Open'),
+      child: const Text('打开'), // 汉化修改
     );
   }
 
@@ -39,14 +39,14 @@ class ScanResultTile extends StatelessWidget {
         result.advertisementData,
       );
       return Text(
-        "Temperature: ${advertisement.temperature}°C, Humidity: ${advertisement.humidity}%, Battery: ${advertisement.batteryLevel}",
+        "温度: ${advertisement.temperature}°C, 湿度: ${advertisement.humidity}%, 电量: ${advertisement.batteryLevel}%", // 汉化修改
       );
     } on NoAdvertisementDataFound {
-      return const Text('No data.');
+      return const Text('暂无温湿度数据'); // 汉化修改
     } on AdvertisementDataFormatNotSupported {
-      return const Text('Not supported.');
+      return const Text('不支持此数据格式'); // 汉化修改
     } catch (e) {
-      return Text('Failed parsing: $e');
+      return Text('数据解析失败: $e'); // 汉化修改
     }
   }
 
