@@ -12,8 +12,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-    flutter_localizations:     # 👈 增加这一行
-    sdk: flutter             # 👈 增加这一行
+  flutter_localizations:     # 💡 格式修正：与 flutter 保持 2 个空格的同级对齐
+    sdk: flutter             # 💡 格式修正：4 个空格对齐，归属在本地化包下
 
   cupertino_icons: ^1.0.9
   device_info_plus: ^13.1.0
