@@ -19,7 +19,7 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
     final data = ByteData.view(Uint8List.fromList(values).buffer);
     final blkid = data.getInt8(0);
     if (blkid != BluetoothConstants.commandMemoBlk) {
-      statusUpdate("data with unexpected blkid $blkid: $values");
+      statusUpdate("接收到意外 blkid ($blkid) 的数据: $values"); // 汉化修改
       return;
     }
     if (data.lengthInBytes >= 13) {
@@ -28,16 +28,16 @@ class MemoCommandProcessor extends CommandProcessor<List<SensorEntry>> {
       return;
     }
     if (data.lengthInBytes >= 3) {
-      statusUpdate('Done with reading. Got ${_sensorEntries.length} samples');
+      statusUpdate('数据读取完成。共获取到 ${_sensorEntries.length} 条记录'); // 汉化修改
       done.complete(_sensorEntries);
       return;
     }
     if (data.lengthInBytes == 2) {
       // TODO(panmari): This message seems pointless. Seems to be mostly 0 if received.
       final numSamples = data.getUint16(1, Endian.little);
-      statusUpdate('Number of samples in memory: $numSamples');
+      statusUpdate('设备内存中的记录总数: $numSamples'); // 汉化修改
       return;
     }
-    statusUpdate("data with unexpected size data.lengthInBytes: $data");
+    statusUpdate("接收到异常大小的数据（字节数: ${data.lengthInBytes}）: $data"); // 汉化修改
   }
 }
