@@ -100,13 +100,13 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
     try {
       await initBluetooth();
       final drift = await _bluetoothManager.getDeviceTimeAndDrift();
-      _statusUpdates.add("Device time drift: $drift");
+      _statusUpdates.add("设备时间偏差: $drift"); // 汉化修改
 
       await _bluetoothManager.setDeviceTimeToNow();
-      _statusUpdates.add("Successfully updated time.");
+      _statusUpdates.add("成功校准设备时间。"); // 汉化修改
     } catch (e, trace) {
-      _error = "Get time failed: $e";
-      log('Get time failed: $e', stackTrace: trace);
+      _error = "获取设备时间失败: $e"; // 汉化修改
+      log('获取设备时间失败: $e', stackTrace: trace);
     }
     if (mounted) {
       setState(() {});
@@ -123,7 +123,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
         DateTime.now(),
       );
       if (numEntries == 0) {
-        _statusUpdates.add('No missing entries.');
+        _statusUpdates.add('无需同步新记录。'); // 汉化修改
         if (mounted) {
           setState(() {});
         }
@@ -132,8 +132,8 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
       try {
         await initBluetooth();
       } catch (e, trace) {
-        _error = "Bluetooth initialization failed: $e";
-        log('Bluetooth initialization failed: $e', stackTrace: trace);
+        _error = "蓝牙连接初始化失败: $e"; // 汉化修改
+        log('蓝牙连接初始化失败: $e', stackTrace: trace);
         return;
       }
       // Get config first to wake up device. If this is not done, getMemoryData
@@ -141,7 +141,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
       try {
         await _bluetoothManager.getConfig();
       } on TimeoutException {
-        _statusUpdates.add('Get config timed out, ignoring...');
+        _statusUpdates.add('获取配置超时，正在忽略...'); // 汉化修改
       }
       List<SensorEntry> newEntries = [];
       try {
@@ -154,18 +154,18 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
           }
         });
       } on TimeoutException {
-        _error = "Timeout while getting data. Move closer to the device.";
+        _error = "数据同步超时。请尝试离温湿度计更近一些。"; // 汉化修改
         return;
       }
       final updatedSensorHistory = SensorHistory.createUpdated(
         cachedSensorHistory,
         newEntries,
       );
-      _statusUpdates.add('Updated sensor history: $updatedSensorHistory');
+      _statusUpdates.add('已更新传感器历史数据: $updatedSensorHistory'); // 汉化修改
       widget.device.setCachedSensorHistory(ref, updatedSensorHistory);
     } catch (e, trace) {
-      _error = "Updating data failed: $e";
-      log('Updating data failed: $e', stackTrace: trace);
+      _error = "更新数据失败: $e"; // 汉化修改
+      log('更新数据失败: $e', stackTrace: trace);
     }
   }
 
@@ -212,7 +212,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
     if (widget.device.platformName.isNotEmpty) {
       res.write(widget.device.platformName);
     } else {
-      res.write("N/A");
+      res.write("无设备名称"); // 汉化修改
     }
     res.write(', (${widget.device.remoteId})');
     return Text(res.toString());
@@ -233,7 +233,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
     if (lastEntry == null || lastEntry.voltageBattery <= 0) {
       return const SizedBox();
     }
-    return Text("Battery: ${lastEntry.batteryPercentage.toStringAsFixed(0)}%");
+    return Text("剩余电量: ${lastEntry.batteryPercentage.toStringAsFixed(0)}%"); // 汉化修改
   }
 
   Future<void> _deleteSensorEntries() async {
@@ -246,8 +246,8 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
       context: context,
       firstDate: history.sensorEntries.first.timestamp,
       lastDate: history.sensorEntries.last.timestamp,
-      helpText: 'Select date range to delete',
-      saveText: 'Delete',
+      helpText: '选择要删除的日期范围', // 汉化修改
+      saveText: '删除', // 汉化修改
     );
 
     if (dateRange != null) {
@@ -300,7 +300,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: _isUpdatingData ? null : onUpdateDataPressed,
-          tooltip: "Updates data by connecting to the device.",
+          tooltip: "连接设备同步最新温湿度数据。", // 汉化修改
           child: Icon(Icons.update),
         ),
         body: SingleChildScrollView(
@@ -314,7 +314,7 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
                     child:
                         filteredSensorEntries.isEmpty
                             ? Text(
-                              "No entries available, click [Update] to fetch data",
+                              "暂无温湿度记录，请点击右下角按钮进行同步。", // 汉化修改
                             )
                             : SensorChart(
                               sensorEntries: filteredSensorEntries,
@@ -332,10 +332,10 @@ class _DeviceScreenState extends ConsumerState<DeviceScreen> {
 }
 
 enum DayFilterOption {
-  all(numDays: -1, label: 'All'),
-  lastDay(numDays: 1, label: 'last day'),
-  oneWeek(numDays: 7, label: '7 days'),
-  oneMonth(numDays: 30, label: '30 days');
+  all(numDays: -1, label: '全部'), // 汉化修改
+  lastDay(numDays: 1, label: '24小时'), // 汉化修改
+  oneWeek(numDays: 7, label: '最近7天'), // 汉化修改
+  oneMonth(numDays: 30, label: '最近30天'); // 汉化修改
 
   final int numDays;
   final String label;
