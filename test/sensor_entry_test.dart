@@ -29,18 +29,15 @@ void main() {
       final parsed = SensorEntry.parse(data);
 
       expect(parsed.index, equals(122));
+
+      // 规范修改：使用清晰的局部变量来计算抵消时区后的预期时间
+      final expectedTime = DateTime.fromMillisecondsSinceEpoch(1740874191000);
       expect(
-      parsed.timestamp,
-      equals((() {
-        final expected = DateTime.fromMillisecondsSinceEpoch(1740874191000);
-        return expected.subtract(expected.timeZoneOffset);
-      })()),
-    );
+        parsed.timestamp,
+        equals(expectedTime.subtract(expectedTime.timeZoneOffset)),
+      );
+
       expect(parsed.temperature, equals(22.23));
       expect(parsed.temperatureIn(TemperatureUnit.fahrenheit), equals(72.014));
       expect(parsed.temperatureIn(TemperatureUnit.celsius), equals(22.23));
-      expect(parsed.humidity, equals(43.58));
-      expect(parsed.voltageBattery, equals(2936));
-    });
-  });
-}
+      expect(parsed.humidity, equals(43.5
