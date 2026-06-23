@@ -32,7 +32,7 @@ jobs:
         run: flutter build apk --release
 
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4 # 必须是 v4，防 deprecated 报错
         with:
           name: mi_thermo_reader_fixed
           path: build/app/outputs/flutter-apk/app-release.apk
