@@ -32,7 +32,7 @@ class BluetoothManager {
     );
     if (memoService == null) {
       throw Exception(
-        'Failed to find compatible service, any of  $compatibleServiceUuids',
+        '未能找到兼容的蓝牙服务。所需服务 UUID 之一：$compatibleServiceUuids', // 汉化修改
       );
     }
     final compatibleCharacteristicUuids = [
@@ -44,7 +44,7 @@ class BluetoothManager {
     );
     if (characteristic == null) {
       throw Exception(
-        'Failed to find compatible characteristic, any of $compatibleCharacteristicUuids.',
+        '未能找到兼容的数据特征通道。所需特征 UUID 之一：$compatibleCharacteristicUuids.', // 汉化修改
       );
     }
     return characteristic;
@@ -52,27 +52,27 @@ class BluetoothManager {
 
   Future<void> init(Function(String) statusUpdate) async {
     if (_characteristic != null) {
-      statusUpdate("Already initialized.");
+      statusUpdate("蓝牙连接已完成初始化。"); // 汉化修改
       return;
     }
     await device.connect(license: License.free);
-    statusUpdate("Connect: Success");
+    statusUpdate("连接状态: 成功"); // 汉化修改
 
     final services = await device.discoverServices(
       subscribeToServicesChanged: false,
     );
-    statusUpdate("Discover Services: Success");
+    statusUpdate("发现蓝牙服务: 成功"); // 汉化修改
 
     _characteristic = findCharacteristic(services);
-    statusUpdate('Found memo characteristic.');
+    statusUpdate('已找到温湿度数据特征通道。'); // 汉化修改
 
     await _characteristic!.setNotifyValue(true);
-    statusUpdate('Subscribed to notifications');
+    statusUpdate('已开启数据通知订阅'); // 汉化修改
   }
 
   Future<T> _execute<T>(List<int> command, CommandProcessor processor) async {
     if (_characteristic == null) {
-      throw "Not initialized, characteristic is missing.";
+      throw "蓝牙未连接，数据特征通道缺失。"; // 汉化修改
     }
     final valueSubscription = _characteristic!.onValueReceived.listen(
       processor.onData,
@@ -102,7 +102,7 @@ class BluetoothManager {
     Function(String) statusUpdate,
   ) async {
     final processor = MemoCommandProcessor(statusUpdate: statusUpdate);
-    statusUpdate('Requesting $numEntries from memory');
+    statusUpdate('正在向设备请求 $numEntries 条历史温湿度记录...'); // 汉化修改
     return _execute(BluetoothCommands.getMemoCommand(numEntries), processor);
   }
 
@@ -114,7 +114,7 @@ class BluetoothManager {
   // Because of time drifts on the device, calling this occasionally is necessary.
   Future<void> setDeviceTimeToNow() {
     if (_characteristic == null) {
-      throw "Not initialized";
+      throw "蓝牙尚未初始化完成"; // 汉化修改
     }
     final now = DateTime.now();
     return _characteristic!.write(
