@@ -12,6 +12,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+    flutter_localizations:     # 👈 增加这一行
+    sdk: flutter             # 👈 增加这一行
 
   cupertino_icons: ^1.0.9
   device_info_plus: ^13.1.0
