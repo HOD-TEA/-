@@ -31,17 +31,17 @@ class KnownDeviceTile extends ConsumerWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Deletion'),
-          content: Text('Are you sure you want to delete "${_bestName()}"?'),
+          title: Text('确认删除'), // 汉化修改
+          content: Text('您确定要删除 "${_bestName()}" 吗？'), // 汉化修改
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: Text('取消'), // 汉化修改
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
             ),
             ElevatedButton(
-              child: Text('Delete'),
+              child: Text('删除'), // 汉化修改
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -67,54 +67,4 @@ class KnownDeviceTile extends ConsumerWidget {
       return isScanning
           ? const SizedBox(
             width: 20,
-            height: 20,
-            child: CircularProgressIndicator(),
-          )
-          : Text('Sensor reading not available');
-    }
-    return Text('Temperature: ${ad.temperature}°C, Humidity: ${ad.humidity}%');
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
-      margin: EdgeInsets.all(8.0),
-      child: Stack(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Center(
-              child: Column(
-                children: [
-                  Icon(Icons.device_thermostat, size: 50.0),
-                  SizedBox(height: 8.0),
-                  Text(_bestName()),
-                  SizedBox(height: 8.0),
-                  _advertisementDataRow(),
-                  SizedBox(height: 8.0),
-                  OutlinedButton(
-                    onPressed:
-                        () => Navigator.of(
-                          context,
-                        ).pushNamed(DeviceScreen.routeName, arguments: device),
-                    child: const Text('Open'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
-            top: 0.0,
-            right: 0.0,
-            child: IconButton(
-              onPressed: () async {
-                await _maybeRemoveKnownDevice(context, ref);
-              },
-              icon: Icon(Icons.close, size: 20.0),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
+            heigh
