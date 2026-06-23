@@ -16,8 +16,6 @@ import 'package:share_plus/share_plus.dart';
 
 enum Selection { about, rate, fixTime, export, deleteRange, changeTempUnit }
 
-/// For retrieving PackageInfo async, the actual PopupMenu is wrapped
-/// in this stateful widget.
 class PopupMenu extends StatefulWidget {
   final Function? getAndFixTime;
   final Function? deleteSensorEntries;
@@ -69,7 +67,7 @@ class _PopupMenuState extends State<PopupMenu> {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path, mimeType: 'text/csv')],
-          text: '从小米温湿度计读取器导出的传感器数据', // 汉化修改
+          text: '从小米温湿度计读取器导出的传感器数据',
         ),
       );
     } catch (e, s) {
@@ -78,7 +76,7 @@ class _PopupMenuState extends State<PopupMenu> {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('导出数据出错: $e'))); // 汉化修改
+        ).showSnackBar(SnackBar(content: Text('导出数据出错: $e')));
       }
     }
   }
@@ -88,4 +86,91 @@ class _PopupMenuState extends State<PopupMenu> {
     return FutureBuilder<PackageInfo>(
       future: _packageInfo,
       builder: (context, snapshot) {
-        ret
+        return PopupMenuButton<Selection>(
+          onSelected: (Selection result) async {
+            switch (result) {
+              case Selection.about:
+                showDialog(
+                  context: context,
+                  builder:
+                      (context) => MiThermoReaderAboutDialog(
+                        version: snapshot.data?.version ?? '未知版本',
+                      ),
+                );
+                break;
+              case Selection.rate:
+                final InAppReview inAppReview = InAppReview.instance;
+                if (await inAppReview.isAvailable()) {
+                  inAppReview.requestReview();
+                } else {
+                  inAppReview.openStoreListing();
+                }
+                break;
+              case Selection.fixTime:
+                widget.getAndFixTime!();
+                break;
+              case Selection.export:
+                _exportAndShare(context);
+                break;
+              case Selection.deleteRange:
+                widget.deleteSensorEntries!();
+                break;
+              case Selection.changeTempUnit:
+                int sdkInt = 0;
+                if (!kIsWeb && Platform.isAndroid) {
+                  final androidInfo = await DeviceInfoPlugin().androidInfo;
+                  sdkInt = androidInfo.version.sdkInt;
+                }
+                if (context.mounted) {
+                  showDialog(
+                    context: context,
+                    builder:
+                        (context) =>
+                            ChangeTemperatureUnitDialog(androidSdk: sdkInt),
+                  );
+                }
+                break;
+            }
+          },
+          itemBuilder: (BuildContext context) => _menuItemBuilder(context),
+        );
+      },
+    );
+  }
+
+  List<PopupMenuEntry<Selection>> _menuItemBuilder(BuildContext context) {
+    final hasSensorEntries =
+        widget.sensorEntries != null && widget.sensorEntries!.isNotEmpty;
+    return [
+      if (widget.getAndFixTime != null)
+        const PopupMenuItem<Selection>(
+          value: Selection.fixTime,
+          child: Text('校准时间'),
+        ),
+      if (hasSensorEntries)
+        const PopupMenuItem<Selection>(
+          value: Selection.export,
+          child: Text('导出为 CSV'),
+        ),
+      if (hasSensorEntries)
+        const PopupMenuItem<Selection>(
+          value: Selection.deleteRange,
+          child: Text('删除日期范围'),
+        ),
+      if (!kIsWeb)
+        const PopupMenuItem<Selection>(
+          value: Selection.changeTempUnit,
+          child: Text('更改温度单位'),
+        ),
+      if (!kIsWeb)
+        const PopupMenuItem<Selection>(
+          value: Selection.rate,
+          child: Text('评价此应用'),
+        ),
+      const PopupMenuItem<Selection>(
+        value: Selection.about,
+        child: Text('关于'),
+      ),
+    ];
+  }
+}

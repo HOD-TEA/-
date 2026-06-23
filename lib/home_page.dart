@@ -54,7 +54,6 @@ class _MiThermoReaderHomePageState
               final parsed = ThermometerAdvertisement.create(
                 result.advertisementData,
               );
-              // TODO(panmari): Handle this better with exception/null returns.
               if (parsed.temperature.isFinite && parsed.humidity.isFinite) {
                 _knownDeviceResults[result.device.remoteId.str] = parsed;
                 found = true;
@@ -86,6 +85,124 @@ class _MiThermoReaderHomePageState
   Future<void> onRefresh() async {
     FlutterBluePlus.stopScan();
     FlutterBluePlus.startScan(
-      // withServices does not work on Android, the service is not advertised.
-      // withServices: [BluetoothConstants.memoServiceGuid],
-      // withServiceData works, but there's multiple formats for adve
+      timeout: const Duration(seconds: 15),
+    );
+  }
+
+  @override
+  void dispose() {
+    FlutterBluePlus.stopScan();
+    _scanResultsSubscription.cancel();
+    _isScanningSubscription.cancel();
+    _adapterStateStateSubscription.cancel();
+    super.dispose();
+  }
+
+  Widget _addDeviceCard() {
+    final isBluetoothOn = _adapterState == BluetoothAdapterState.on;
+
+    return Card(
+      margin: const EdgeInsets.all(8.0),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Center(
+          child: Column(
+            children: [
+              Icon(
+                isBluetoothOn ? Icons.add : Icons.bluetooth_disabled,
+                size: 50.0,
+              ),
+              const SizedBox(height: 10),
+              if (isBluetoothOn)
+                OutlinedButton(
+                  onPressed:
+                      () => Navigator.pushNamed(context, ScanScreen.routeName),
+                  child: const Text('添加设备'),
+                )
+              else
+                Text('蓝牙当前处于 "${_adapterState.name}" 状态，无法添加新设备'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _centerContent() {
+    final knownDevices = KnownDevice.getAll(ref);
+    if (knownDevices.isNotEmpty) {
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          children: [
+            ...knownDevices
+                .map(
+                  (d) => KnownDeviceTile(
+                    device: d,
+                    isScanning: _isScanning,
+                    advertisement: _knownDeviceResults[d.remoteId],
+                  ),
+                )
+                .toList()
+                .cast<Widget>(),
+            _addDeviceCard(),
+          ],
+        ),
+      );
+    }
+    switch (_adapterState) {
+      case BluetoothAdapterState.on:
+        return ListView(children: [_addDeviceCard()]);
+      case BluetoothAdapterState.off:
+        return ErrorMessage(
+          message:
+              '蓝牙当前未开启（状态：${_adapterState.name}），请开启蓝牙后继续。',
+        );
+      default:
+        return Text(
+          '蓝牙适配器状态为：${_adapterState.name}',
+          textAlign: TextAlign.center,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("小米温湿度计读取器"),
+        actions: [const PopupMenu()],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _centerContent(),
+      ),
+    );
+  }
+}
+
+class BluetoothAdapterStateObserver extends NavigatorObserver {
+  StreamSubscription<BluetoothAdapterState>? _adapterStateSubscription;
+
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    super.didPush(route, previousRoute);
+    if (route.settings.name == '/DeviceScreen') {
+      _adapterStateSubscription ??= FlutterBluePlus.adapterState.listen((
+        state,
+      ) {
+        if (state != BluetoothAdapterState.on) {
+          navigator?.pop();
+        }
+      });
+    }
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    super.didPop(route, previousRoute);
+    _adapterStateSubscription?.cancel();
+    _adapterStateSubscription = null;
+  }
+}

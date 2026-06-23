@@ -31,17 +31,17 @@ class KnownDeviceTile extends ConsumerWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('确认删除'), // 汉化修改
-          content: Text('您确定要删除 "${_bestName()}" 吗？'), // 汉化修改
+          title: const Text('确认删除'),
+          content: Text('您确定要删除 "${_bestName()}" 吗？'),
           actions: <Widget>[
             TextButton(
-              child: Text('取消'), // 汉化修改
+              child: const Text('取消'),
               onPressed: () {
                 Navigator.of(context).pop(false);
               },
             ),
             ElevatedButton(
-              child: Text('删除'), // 汉化修改
+              child: const Text('删除'),
               onPressed: () {
                 Navigator.of(context).pop(true);
               },
@@ -66,5 +66,55 @@ class KnownDeviceTile extends ConsumerWidget {
     if (ad == null) {
       return isScanning
           ? const SizedBox(
-            width: 20,
-            heigh
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(),
+            )
+          : const Text('暂无温湿度数据');
+    }
+    return Text('温度: ${ad.temperature}°C, 湿度: ${ad.humidity}%');
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Card(
+      margin: const EdgeInsets.all(8.0),
+      child: Stack(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Center(
+              child: Column(
+                children: [
+                  const Icon(Icons.device_thermostat, size: 50.0),
+                  const SizedBox(height: 8.0),
+                  Text(_bestName()),
+                  const SizedBox(height: 8.0),
+                  _advertisementDataRow(),
+                  const SizedBox(height: 8.0),
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).pushNamed(
+                      DeviceScreen.routeName,
+                      arguments: device,
+                    ),
+                    child: const Text('打开'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0.0,
+            right: 0.0,
+            child: IconButton(
+              onPressed: () async {
+                await _maybeRemoveKnownDevice(context, ref);
+              },
+              icon: const Icon(Icons.close, size: 20.0),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
