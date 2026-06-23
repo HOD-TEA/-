@@ -11,7 +11,7 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AboutDialog(
       applicationIcon: Image.asset('assets/icon/icon.png', height: 50),
-      applicationName: "小米温湿度计读取器", // 汉化修改
+      applicationName: "小米温湿度计读取器",
       applicationLegalese: '© 2025 panmari',
       applicationVersion: version,
       children: [
@@ -21,7 +21,7 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
             style: Theme.of(context).textTheme.bodyMedium,
             children: [
               const TextSpan(
-                text: '在使用来自 ', // 汉化修改
+                text: '在使用来自 ',
               ),
               TextSpan(
                 text: 'https://github.com/pvvx/ATC_MiThermometer',
@@ -36,18 +36,28 @@ class MiThermoReaderAboutDialog extends StatelessWidget {
                         );
                       },
               ),
-              const TextSpan(text: ' 或 '), // 汉化修改
+              const TextSpan(text: ' 或 '),
               TextSpan(
                 text: 'https://github.com/pvvx/THB2',
                 style: const TextStyle(color: Colors.lightBlue),
                 recognizer:
-                    (onTap) => inAppReview.requestReview(), // 原作者逻辑保持不变
+                    TapGestureRecognizer()
+                      ..onTap = () {
+                        launchUrl(Uri.parse('https://github.com/pvvx/THB2'));
+                      },
               ),
               const TextSpan(
-                text: ' 的第三方固件后，设备通常将历史记录以本地时间数值直接保存在其内部。本软件旨在方便快速读取并可视化这些历史记录。', // 汉化修改
+                text: ' 的第三方固件后，设备通常将历史记录以本地时间数值直接保存在其内部。本软件旨在方便快速读取并可视化这些历史记录。\n',
               ),
             ],
           ),
+        ),
+        ElevatedButton(
+          onPressed:
+              () => launchUrl(
+                Uri.parse('https://github.com/panmari/mi_thermo_reader'),
+              ),
+          child: const Text('GitHub 源码'),
         ),
       ],
     );
