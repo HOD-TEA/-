@@ -18,19 +18,17 @@ class SensorChart extends StatelessWidget {
     required this.temperatureUnit,
   });
 
-  // Helper to format dates on the X-axis based on the total time range.
-  // For short time ranges, a more detailed format is used.
+  // 格式化 X 轴上的日期。如果是较长的时间跨度，使用中文的 “M月d日” 格式。
   String _formatDate(Duration timeRange, double value) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(value.toInt());
     if (timeRange.inDays > 2) {
-      return DateFormat('MMM d').format(dateTime); // e.g., "Apr 9"
+      return DateFormat('M月d日').format(dateTime); // 汉化修改：例如 "4月9日"
     }
-    return DateFormat('HH:mm').format(dateTime); // e.g., "11:41"
+    return DateFormat('HH:mm').format(dateTime); // 例如 "11:41"
   }
 
-  // Calculate a reasonable interval for vertical grid lines (time axis)
+  // 计算垂直网格线（时间轴）的合理间隔
   Duration _calculateTimeGridIntervalDuration(Duration timeRange) {
-    // Aim for roughly 5-10 grid lines
     if (timeRange.inDays > 30) {
       return Duration(days: 7);
     }
@@ -40,30 +38,28 @@ class SensorChart extends StatelessWidget {
     if (timeRange.inDays > 1) {
       return Duration(days: 1);
     }
-    // Works best for aligning with labels.
     return Duration(hours: 5);
   }
 
-  // Calculate a reasonable interval for horizontal grid lines (based on primary axis - Temperature)
+  // 计算水平网格线（温度轴）的合理间隔
   double _calculateTempGridInterval(double tempRange) {
-    if (tempRange <= 0) return 1; // Avoid issues with zero range
+    if (tempRange <= 0) return 1;
     if (tempRange > 10) return 2;
     if (tempRange > 3) return 1;
-    return 0.5; // Finer grid for small ranges
+    return 0.5;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Handle empty data case
+    // 处理无数据情况
     if (sensorEntries.isEmpty) {
       return const AspectRatio(
         aspectRatio: 2,
-        child: Center(child: Text('No sensor data available.')),
+        child: Center(child: Text('无可用传感器数据。')), // 汉化修改
       );
     }
 
     Size size = MediaQuery.of(context).size;
-    // Landscape, make sure the whole chart is visible on a single screen.
     if (size.width > size.height) {
       return ConstrainedBox(
         constraints: BoxConstraints(
@@ -73,20 +69,16 @@ class SensorChart extends StatelessWidget {
         child: _buildChart(context),
       );
     }
-    // Portrait, use the full width and keep aspect ratio fixed.
     return AspectRatio(
-      aspectRatio: 2, // Maintain aspect ratio
+      aspectRatio: 2,
       child: _buildChart(context),
     );
   }
 
   Widget _buildChart(BuildContext context) {
-    // --- Calculate Ranges ---
-    // Time range (X-axis)
+    // --- 计算范围 ---
     final minTimestamp =
         sensorEntries.first.timestamp.millisecondsSinceEpoch.toDouble();
-    // TODO(panmari): Align minX and maxX to full days if the time range is appropriate.
-    // Ensure minX is rounded to the previous full hour
     final minX =
         sensorEntries.first.timestamp
             .copyWith(minute: 0, second: 0, millisecond: 0, microsecond: 0)
@@ -94,7 +86,6 @@ class SensorChart extends StatelessWidget {
             .toDouble();
     final maxTimestamp =
         sensorEntries.last.timestamp.millisecondsSinceEpoch.toDouble();
-    // Ensure maxX is rounded to the next full hour
     final maxX =
         sensorEntries.last.timestamp
             .add(const Duration(minutes: 59, seconds: 59))
@@ -105,46 +96,44 @@ class SensorChart extends StatelessWidget {
       milliseconds: (maxTimestamp - minTimestamp).toInt(),
     );
 
-    // Temperature range (Y-axis Left - Primary)
+    // 温度范围 (Y 轴左侧 - 主轴)
     final minTemp = sensorEntries
         .map((e) => e.temperatureIn(temperatureUnit))
         .reduce(min);
     final maxTemp = sensorEntries
         .map((e) => e.temperatureIn(temperatureUnit))
         .reduce(max);
-    final double tempPadding = (maxTemp - minTemp) * 0.15; // Add 15% padding
+    final double tempPadding = (maxTemp - minTemp) * 0.15;
     final double finalMinY =
         (minTemp - tempPadding)
-            .floorToDouble(); // Use temperature for internal Y scale
+            .floorToDouble();
     final double finalMaxY = (maxTemp + tempPadding).ceilToDouble();
     final double primaryYRange = max(
       1,
       finalMaxY - finalMinY,
-    ); // Ensure range is at least 1
+    );
 
-    // Humidity range (Y-axis Right - Secondary) - needed for normalization and labels
+    // 湿度范围 (Y 轴右侧 - 副轴)
     final minHumidity = sensorEntries.map((e) => e.humidity).reduce(min);
     final maxHumidity = sensorEntries.map((e) => e.humidity).reduce(max);
-    // Ensure humidity range doesn't exceed 0-100 bounds for padding calculation
     final double humidityPadding = (maxHumidity - minHumidity) * 0.15;
     final double finalMinHumidity = max(
       0,
       minHumidity - humidityPadding,
-    ); // Clamp min at 0%
+    );
     final double finalMaxHumidity = min(
       100,
       maxHumidity + humidityPadding,
-    ); // Clamp max at 100%
+    );
     final double secondaryYRange = max(
       1,
       finalMaxHumidity - finalMinHumidity,
-    ); // Ensure range is at least 1
+    );
 
-    // --- Normalize Humidity Data ---
+    // --- 归一化湿度数据 ---
     final List<FlSpot> normalizedHumiditySpots =
         sensorEntries.map((s) {
           final double originalY = s.humidity;
-          // Normalize humidity value to fit within the finalMinY/finalMaxY (temperature) range
           final double normalizedY =
               finalMinY +
               ((originalY - finalMinHumidity) / secondaryYRange) *
@@ -155,7 +144,7 @@ class SensorChart extends StatelessWidget {
           );
         }).toList();
 
-    // --- Prepare Temperature Spots ---
+    // --- 准备温度数据点 ---
     final List<FlSpot> temperatureSpots =
         sensorEntries
             .map(
@@ -171,7 +160,6 @@ class SensorChart extends StatelessWidget {
 
     return LineChart(
       LineChartData(
-        // --- General Appearance ---
         backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         borderData: FlBorderData(
           show: true,
@@ -184,7 +172,7 @@ class SensorChart extends StatelessWidget {
             right: BorderSide(
               color: Theme.of(context).dividerColor,
               width: 1.5,
-            ), // Show right border too
+            ),
             top: BorderSide.none,
           ),
         ),
@@ -198,7 +186,7 @@ class SensorChart extends StatelessWidget {
           drawHorizontalLine: true,
           horizontalInterval: _calculateTempGridInterval(
             maxTemp - minTemp,
-          ), // Base grid on temperature scale
+          ),
           getDrawingHorizontalLine:
               (value) => FlLine(
                 color: Theme.of(context).dividerColor.withAlpha(50),
@@ -211,42 +199,39 @@ class SensorChart extends StatelessWidget {
               ),
         ),
 
-        // --- Axis Range Definitions ---
         minX: minX,
         maxX: maxX,
-        minY: finalMinY, // Based on temperature range
-        maxY: finalMaxY, // Based on temperature range
-        // --- Line Data ---
+        minY: finalMinY,
+        maxY: finalMaxY,
         lineBarsData: [
-          // Temperature Line (Left Axis)
+          // 温度折线 (左轴)
           LineChartBarData(
             spots: temperatureSpots,
             color: tempColor,
             barWidth: 2,
             isStrokeCapRound: true,
-            dotData: const FlDotData(show: false), // Hide dots on line
+            dotData: const FlDotData(show: false),
           ),
-          // Humidity Line (Right Axis - uses normalized data)
+          // 湿度折线 (右轴)
           LineChartBarData(
             spots: normalizedHumiditySpots,
             color: humidityColor,
             barWidth: 2,
             isStrokeCapRound: true,
-            dotData: const FlDotData(show: false), // Hide dots on line
+            dotData: const FlDotData(show: false),
           ),
         ],
 
-        // --- Axis Titles (Labels) ---
         titlesData: FlTitlesData(
           show: true,
 
-          // Bottom (X - Time Axis)
+          // X 轴时间
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               minIncluded: false,
               maxIncluded: false,
               showTitles: true,
-              reservedSize: 35, // Space for labels below chart
+              reservedSize: 35,
               interval: bottomTitleInterval,
               getTitlesWidget: (value, TitleMeta meta) {
                 return SideTitleWidget(
@@ -263,20 +248,18 @@ class SensorChart extends StatelessWidget {
             ),
           ),
 
-          // Left (Y - Temperature Axis)
+          // Y 轴左侧：温度
           leftTitles: AxisTitles(
             axisNameWidget: Text(
-              'Temp (°${temperatureUnit.value})',
+              '温度 (°${temperatureUnit.value})', // 汉化修改
               style: TextStyle(color: tempColor),
             ),
-            axisNameSize: 24, // Space for axis title
+            axisNameSize: 24,
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 28, // Space for labels + padding
-              // Use the same interval as the horizontal grid for consistency
+              reservedSize: 28,
               interval: max(1, (primaryYRange / 5).roundToDouble()),
               getTitlesWidget: (value, meta) {
-                // Only show labels within the calculated Y range
                 if (value < finalMinY || value > finalMaxY) {
                   return Container();
                 }
@@ -291,43 +274,33 @@ class SensorChart extends StatelessWidget {
             ),
           ),
 
-          // Right (Y - Humidity Axis)
+          // Y 轴右侧：湿度
           rightTitles: AxisTitles(
             axisNameWidget: Text(
-              'Humidity (%)',
+              '湿度 (%)', // 汉化修改
               style: TextStyle(color: humidityColor),
             ),
             axisNameSize: 24,
             sideTitles: SideTitles(
               showTitles: true,
-              reservedSize: 28, // Match left side
-              // Use an interval based on primaryY, aiming for ~5 labels
+              reservedSize: 28,
               interval: max(1, (primaryYRange / 5).roundToDouble()),
               getTitlesWidget: (value, meta) {
-                // 'value' here is on the TEMPERATURE scale (finalMinY to finalMaxY)
-                // We need to reverse-normalize it to get the humidity value
-
-                // Only calculate for values within the displayed range
                 if (value < finalMinY || value > finalMaxY) {
                   return Container();
                 }
 
-                // Reverse normalization:
                 final double originalHumidity =
                     finalMinHumidity +
                     ((value - finalMinY) / primaryYRange) * secondaryYRange;
 
-                // Don't show labels outside the actual humidity range
                 if (originalHumidity < finalMinHumidity ||
                     originalHumidity > finalMaxHumidity) {
-                  // This can happen due to range padding or interval alignment
-                  // return Container(); // Option 1: Hide them
-                  // Option 2: Clamp them (might look slightly off if intervals are large)
                   if (originalHumidity < finalMinHumidity) {
-                    return Container(); // Hide below min
+                    return Container();
                   }
                   if (originalHumidity > finalMaxHumidity) {
-                    return Container(); // Hide above max
+                    return Container();
                   }
                 }
 
@@ -342,17 +315,15 @@ class SensorChart extends StatelessWidget {
             ),
           ),
 
-          // Hide Top Titles
           topTitles: const AxisTitles(
             sideTitles: SideTitles(showTitles: false),
           ),
         ),
 
-        // --- Tooltips ---
+        // --- 触摸提示框 ---
         lineTouchData: LineTouchData(
           enabled: true,
           getTouchedSpotIndicator: (barData, spotIndexes) {
-            // Customize touch indicator appearance
             return spotIndexes.map((index) {
               return TouchedSpotIndicatorData(
                 FlLine(
@@ -390,20 +361,18 @@ class SensorChart extends StatelessWidget {
               final String formattedDate = DateFormat(
                 'yyyy-MM-dd HH:mm:ss',
               ).format(dateTime);
-              // Make sure temperature always appears first.
               touchedSpots.sort((a, b) => a.barIndex.compareTo(b.barIndex));
               final items = touchedSpots.map((LineBarSpot touchedSpot) {
                 if (touchedSpot.barIndex == 0) {
-                  return 'Temperature: ${touchedSpot.y.toStringAsFixed(1)}°C\n';
+                  // 汉化修改，并修复了原作者在华氏度(°F)下依然显示 °C 的 Bug
+                  return '温度: ${touchedSpot.y.toStringAsFixed(1)}°${temperatureUnit.value}\n';
                 } else {
-                  // The touchedSpot.y is NORMALIZED humidity. Reverse-normalize it.
                   final double originalHumidity =
                       finalMinHumidity +
                       ((touchedSpot.y - finalMinY) / primaryYRange) *
                           secondaryYRange;
-                  // Another approach that doesn't rely on on reverse-normalizing
-                  // would be to look up the original entry using dateTime.
-                  return 'Humidity: ${originalHumidity.toStringAsFixed(1)}%';
+                  // 汉化修改
+                  return '湿度: ${originalHumidity.toStringAsFixed(1)}%';
                 }
               });
               return [
@@ -419,7 +388,7 @@ class SensorChart extends StatelessWidget {
                           .toList(),
                   textAlign: TextAlign.left,
                 ),
-                null, // getTooltipItems expects output to be same length as input.
+                null,
               ];
             },
           ),
