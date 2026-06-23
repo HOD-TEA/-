@@ -48,13 +48,8 @@ android {
 
     buildTypes {
         release {
-           buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig signingConfigs.debug // <--- 确保没有等号，就是这行标准的 Groovy 语法
-        }
-    }
+            // 使用标准的 Kotlin 语法进行 debug 签名分配，彻底跳过 keytool 证书报错
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }
