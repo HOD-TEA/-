@@ -2,35 +2,43 @@ name: Build Release APK
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "master", "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # 优化1：启用 Flutter 官方免费云端缓存，无需每次重复下载依赖
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          cache: true
-      - run: flutter pub get
-      - name: Decode Keystore and Create Properties
-        run: |          
-          # Decode the Base64 string and create the keystore file
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
-          
-          # Create the key.properties file
-          echo "storePassword=${{ secrets.STORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=keystore.jks" >> android/key.properties
-      - run: flutter build apk --release
-      - uses: actions/upload-artifact@v7
+          channel: 'stable'
+          cache: true 
+
+      # 优化2：启用专属的 Gradle 依赖与编译产物缓存
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Install Dependencies
+        run: flutter pub get
+
+      # 优化3：指定仅编译 64 位单架构包，干活减半，速度翻倍！
+      - name: Build APK (ARM64 Only)
+        run: flutter build apk --release --target-platform android-arm64
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/apk/release/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
