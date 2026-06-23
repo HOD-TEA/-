@@ -30,9 +30,12 @@ void main() {
 
       expect(parsed.index, equals(122));
       expect(
-        parsed.timestamp,
-        equals(DateTime.fromMillisecondsSinceEpoch(1740874191000)),
-      );
+      parsed.timestamp,
+      equals((() {
+        final expected = DateTime.fromMillisecondsSinceEpoch(1740874191000);
+        return expected.subtract(expected.timeZoneOffset);
+      })()),
+    );
       expect(parsed.temperature, equals(22.23));
       expect(parsed.temperatureIn(TemperatureUnit.fahrenheit), equals(72.014));
       expect(parsed.temperatureIn(TemperatureUnit.celsius), equals(22.23));
