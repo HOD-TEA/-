@@ -92,7 +92,7 @@ class SensorHistory {
 
   @override
   String toString() {
-    return "#Entries: ${sensorEntries.length}, avg interval: ${averageInterval()}, std interval: ${stdInterval()}";
+    return "历史记录数: ${sensorEntries.length}, 平均间隔: ${averageInterval()}, 间隔标准差: ${stdInterval()}";
   }
 
   int missingEntriesSince(DateTime dateTime) {

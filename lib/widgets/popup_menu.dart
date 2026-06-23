@@ -1,21 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mi_thermo_reader/utils/sensor_entry.dart';
 import 'package:mi_thermo_reader/widgets/about_dialog.dart';
-import 'package:mi_thermo_reader/widgets/change_temperature_unit_dialog.dart';
 
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:in_app_review/in_app_review.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-enum Selection { about, rate, fixTime, export, deleteRange, changeTempUnit }
+enum Selection { about, fixTime, export, deleteRange } // 已精简：移除了不需要的 rate 和 changeTempUnit
 
+/// For retrieving PackageInfo async, the actual PopupMenu is wrapped
+/// in this stateful widget.
 class PopupMenu extends StatefulWidget {
   final Function? getAndFixTime;
   final Function? deleteSensorEntries;
@@ -98,14 +97,6 @@ class _PopupMenuState extends State<PopupMenu> {
                       ),
                 );
                 break;
-              case Selection.rate:
-                final InAppReview inAppReview = InAppReview.instance;
-                if (await inAppReview.isAvailable()) {
-                  inAppReview.requestReview();
-                } else {
-                  inAppReview.openStoreListing();
-                }
-                break;
               case Selection.fixTime:
                 widget.getAndFixTime!();
                 break;
@@ -114,21 +105,6 @@ class _PopupMenuState extends State<PopupMenu> {
                 break;
               case Selection.deleteRange:
                 widget.deleteSensorEntries!();
-                break;
-              case Selection.changeTempUnit:
-                int sdkInt = 0;
-                if (!kIsWeb && Platform.isAndroid) {
-                  final androidInfo = await DeviceInfoPlugin().androidInfo;
-                  sdkInt = androidInfo.version.sdkInt;
-                }
-                if (context.mounted) {
-                  showDialog(
-                    context: context,
-                    builder:
-                        (context) =>
-                            ChangeTemperatureUnitDialog(androidSdk: sdkInt),
-                  );
-                }
                 break;
             }
           },
@@ -156,16 +132,6 @@ class _PopupMenuState extends State<PopupMenu> {
         const PopupMenuItem<Selection>(
           value: Selection.deleteRange,
           child: Text('删除日期范围'),
-        ),
-      if (!kIsWeb)
-        const PopupMenuItem<Selection>(
-          value: Selection.changeTempUnit,
-          child: Text('更改温度单位'),
-        ),
-      if (!kIsWeb)
-        const PopupMenuItem<Selection>(
-          value: Selection.rate,
-          child: Text('评价此应用'),
         ),
       const PopupMenuItem<Selection>(
         value: Selection.about,

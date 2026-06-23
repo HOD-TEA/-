@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'; // 💡 增加汉化代理包的引入
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mi_thermo_reader/device_screen.dart';
@@ -44,6 +45,19 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
+      
+      // 💡 核心汉化配置：开启官方中文本地化代理并强制使用中文
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('zh', 'CN'), // 简体中文
+        Locale('en', 'US'), // 英文备用
+      ],
+      locale: const Locale('zh', 'CN'), // 强制使应用运行在中文本地化模式下
+      
       home: const MiThermoReaderHomePage(),
       navigatorObservers: [BluetoothAdapterStateObserver()],
 
