@@ -69,7 +69,7 @@ class _PopupMenuState extends State<PopupMenu> {
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path, mimeType: 'text/csv')],
-          text: 'Exported sensor data from Mi Thermo Reader',
+          text: '从小米温湿度计读取器导出的传感器数据', // 汉化修改
         ),
       );
     } catch (e, s) {
@@ -78,7 +78,7 @@ class _PopupMenuState extends State<PopupMenu> {
       if (context.mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Error exporting data: $e')));
+        ).showSnackBar(SnackBar(content: Text('导出数据出错: $e'))); // 汉化修改
       }
     }
   }
@@ -88,92 +88,4 @@ class _PopupMenuState extends State<PopupMenu> {
     return FutureBuilder<PackageInfo>(
       future: _packageInfo,
       builder: (context, snapshot) {
-        return PopupMenuButton<Selection>(
-          onSelected: (Selection result) async {
-            switch (result) {
-              case Selection.about:
-                showDialog(
-                  context: context,
-                  builder:
-                      (context) => MiThermoReaderAboutDialog(
-                        version: snapshot.data?.version ?? 'Unknown',
-                      ),
-                );
-                break;
-              case Selection.rate:
-                final InAppReview inAppReview = InAppReview.instance;
-                if (await inAppReview.isAvailable()) {
-                  inAppReview.requestReview();
-                } else {
-                  inAppReview.openStoreListing();
-                }
-                break;
-              case Selection.fixTime:
-                widget.getAndFixTime!();
-                break;
-              case Selection.export:
-                _exportAndShare(context);
-                break;
-              case Selection.deleteRange:
-                widget.deleteSensorEntries!();
-                break;
-              case Selection.changeTempUnit:
-                // TODO(panmari): Avoid the await here by fetching device info via riverpod or similar.
-                int sdkInt = 0;
-                if (!kIsWeb && Platform.isAndroid) {
-                  final androidInfo = await DeviceInfoPlugin().androidInfo;
-                  sdkInt = androidInfo.version.sdkInt;
-                }
-                if (context.mounted) {
-                  showDialog(
-                    context: context,
-                    builder:
-                        (context) =>
-                            ChangeTemperatureUnitDialog(androidSdk: sdkInt),
-                  );
-                }
-                break;
-            }
-          },
-          itemBuilder: (BuildContext context) => _menuItemBuilder(context),
-        );
-      },
-    );
-  }
-
-  List<PopupMenuEntry<Selection>> _menuItemBuilder(BuildContext context) {
-    final hasSensorEntries =
-        widget.sensorEntries != null && widget.sensorEntries!.isNotEmpty;
-    return [
-      if (widget.getAndFixTime != null)
-        const PopupMenuItem<Selection>(
-          value: Selection.fixTime,
-          child: Text('Adjust time'),
-        ),
-      if (hasSensorEntries)
-        const PopupMenuItem<Selection>(
-          value: Selection.export,
-          child: Text('Export to CSV'),
-        ),
-      if (hasSensorEntries)
-        const PopupMenuItem<Selection>(
-          value: Selection.deleteRange,
-          child: Text('Delete date range'),
-        ),
-      if (!kIsWeb)
-        const PopupMenuItem<Selection>(
-          value: Selection.changeTempUnit,
-          child: Text('Change temperature unit'),
-        ),
-      if (!kIsWeb)
-        const PopupMenuItem<Selection>(
-          value: Selection.rate,
-          child: Text('Rate this app'),
-        ),
-      const PopupMenuItem<Selection>(
-        value: Selection.about,
-        child: Text('About'),
-      ),
-    ];
-  }
-}
+        ret
