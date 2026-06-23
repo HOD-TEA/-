@@ -44,15 +44,14 @@ class SensorEntry {
     return percentage.clamp(0.0, 100.0);
   }
 
-  static SensorEntry parse(ByteData data) {
+ static SensorEntry parse(ByteData data) {
+    final rawTimestamp = data.getUint32(3, Endian.little) * 1000;
+    final rawDateTime = DateTime.fromMillisecondsSinceEpoch(rawTimestamp);
+    final correctedTimestamp = rawDateTime.subtract(rawDateTime.timeZoneOffset);
+
     return SensorEntry(
       index: data.getUint16(1, Endian.little),
-      timestamp: (() {
-      final rawDateTime = DateTime.fromMillisecondsSinceEpoch(
-        data.getUint32(3, Endian.little) * 1000,
-      );
-      return rawDateTime.subtract(rawDateTime.timeZoneOffset);
-    })(),
+      timestamp: correctedTimestamp,
       temperature: data.getInt16(7, Endian.little) / 100,
       humidity: data.getUint16(9, Endian.little) / 100,
       voltageBattery: data.getUint16(11, Endian.little),
